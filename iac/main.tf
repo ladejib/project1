@@ -102,16 +102,21 @@ resource "aws_iam_role_policy_attachment" "cloud_iam_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
-resource "aws_key_pair" "key" {
+resource "aws_key_pair" "key_pub" {
   key_name   = "key_aws"
   public_key = file("~/.ssh/devOps_key.pub")
+}
+
+resource "aws_key_pair" "key_piv" {
+  key_name   = "key_aws"
+  public_key = file("~/.ssh/devOps_key")
 }
 
 # STEP4 : CREATE INSTANCE
 resource "aws_instance" "my-ec2" {
   ami                    = var.ami
   instance_type          = var.instance_type
-  key_name               = aws_key_pair.key.key_name
+  key_name               = aws_key_pair.key_pub.key_name
   vpc_security_group_ids = [aws_security_group.my-sg.id]
 
   iam_instance_profile = aws_iam_instance_profile.cloud_iam_instance_profile.name
@@ -123,5 +128,30 @@ resource "aws_instance" "my-ec2" {
 
   tags = {
     Name = var.server_name
+  }
+
+ # ESTABLISHING SSH CONNECTION WITH EC2
+  connection {
+    type        = "ssh"
+    private_key = file("~/.ssh/devOps_key")
+    user        = "ubuntu"
+    host        = self.public_ip
+    }
+
+  # Copy installation script
+  provisioner "file" {
+    source      = "Install_tools.sh"
+    destination = "/tmp/Install_tools.sh"
+  }
+
+  # USING REMOTE-EXEC PROVISIONER TO INSTALL 
+  provisioner "remote-exec" {
+    inline = [
+      # Run setup
+      # Ref: https://developer.hashicorp.com/terraform/language/resources/provisioners/remote-exec#script
+      "sudo chmod +x /tmp/Install_tools.sh",
+      "sudo /tmp/Install_tools.sh",
+
+    ]
   }
 }

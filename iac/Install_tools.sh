@@ -57,7 +57,7 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2
 sudo apt install jq -y
 
 # Installing Helm
-sudo snap install helm --classic
+sudo snap install helm --classic 
 
 # Adding Helm repositories
 
