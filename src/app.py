@@ -1,6 +1,24 @@
 from flask import Flask, render_template_string
+import logging
+import sys, os
 
 app = Flask(__name__)
+
+# Ensure the logs directory exists
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+
+# Set up logging
+log_file = 'logs/app.log'
+
+file_handler = logging.FileHandler(log_file)
+file_handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s : %(message)s')
+file_handler.setFormatter(formatter)
+
+# Add the handler to the app's logger
+app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.INFO)
 
 template = """
 <!DOCTYPE html>
@@ -20,8 +38,14 @@ template = """
 
 @app.route("/")
 def home():
+    app.logger.info('Home endpoint was accessed')
     return render_template_string(template, bg_color="lightblue")
 
+@app.route('/error')
+def error():
+    app.logger.error('Error endpoint triggered')
+    return render_template_string(template, bg_color="red")
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
 

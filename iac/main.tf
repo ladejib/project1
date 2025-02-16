@@ -34,16 +34,6 @@ resource "aws_security_group" "my-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-
-  # Port 9090 is required for Prometheus
-  ingress {
-    description = "Prometheus Port"
-    from_port   = 9090
-    to_port     = 9090
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   # Port 8080 is required for webpage
   ingress {
     description = "webpage"
@@ -53,11 +43,20 @@ resource "aws_security_group" "my-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Port 9000 is required for Grafana
+  # Port 9090 is required for prometheus
   ingress {
-    description = "Grafana"
-    from_port   = 9000
-    to_port     = 9000
+    description = "prometheus"
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Port 3100 is required for loki
+  ingress {
+    description = "loki"
+    from_port   = 3100
+    to_port     = 3100
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -71,45 +70,9 @@ resource "aws_security_group" "my-sg" {
   }
 }
 
-# STEP2: CREATE  aws_iam_role resource
-resource "aws_iam_role" "cloud_role" {
-  name               = "cloud_iam_role"
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-}
-
-# aws_iam_instance_profile resource
-resource "aws_iam_instance_profile" "cloud_iam_instance_profile" {
-  name = "cloud_iam_instance_profile"
-  role = aws_iam_role.cloud_role.name
-}
-
-# aws_iam_role_policy resource
-resource "aws_iam_role_policy_attachment" "cloud_iam_role_policy" {
-  role   = aws_iam_role.cloud_role.id
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
-
 resource "aws_key_pair" "key_pub" {
   key_name   = "key_aws"
   public_key = file("~/.ssh/devOps_key.pub")
-}
-
-resource "aws_key_pair" "key_piv" {
-  key_name   = "key_aws"
-  public_key = file("~/.ssh/devOps_key")
 }
 
 # STEP4 : CREATE INSTANCE
@@ -119,9 +82,6 @@ resource "aws_instance" "my-ec2" {
   key_name               = aws_key_pair.key_pub.key_name
   vpc_security_group_ids = [aws_security_group.my-sg.id]
 
-  iam_instance_profile = aws_iam_instance_profile.cloud_iam_instance_profile.name
-  user_data            = templatefile("./Install_tools.sh", {})
-
   root_block_device {
     volume_size = var.volume_size
   }
@@ -130,18 +90,18 @@ resource "aws_instance" "my-ec2" {
     Name = var.server_name
   }
 
- # ESTABLISHING SSH CONNECTION WITH EC2
+  # ESTABLISHING SSH CONNECTION WITH EC2
   connection {
     type        = "ssh"
     private_key = file("~/.ssh/devOps_key")
     user        = "ubuntu"
     host        = self.public_ip
-    }
+  }
 
-  # Copy installation script
+  # Copy Config files
   provisioner "file" {
-    source      = "Install_tools.sh"
-    destination = "/tmp/Install_tools.sh"
+    source      = "./source/"
+    destination = "/tmp"
   }
 
   # USING REMOTE-EXEC PROVISIONER TO INSTALL 
@@ -151,7 +111,6 @@ resource "aws_instance" "my-ec2" {
       # Ref: https://developer.hashicorp.com/terraform/language/resources/provisioners/remote-exec#script
       "sudo chmod +x /tmp/Install_tools.sh",
       "sudo /tmp/Install_tools.sh",
-
     ]
   }
 }
