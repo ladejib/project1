@@ -43,6 +43,24 @@ resource "aws_security_group" "my-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Port 3000 is required for grafana
+  ingress {
+    description = "grafana"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Port 5000 is required for color_app
+  ingress {
+    description = "color_app"
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Port 9090 is required for prometheus
   ingress {
     description = "prometheus"

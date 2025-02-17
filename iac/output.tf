@@ -5,7 +5,7 @@ output "SERVER-SSH-ACCESS" {
 
 # GET APP URL 
 output "APP_URL" {
-  value = "http://${aws_instance.my-ec2.public_ip}:8080"
+  value = "http://${aws_instance.my-ec2.public_ip}:5000"
 }
 
 # GET LOKI/METRICS URL 
@@ -21,6 +21,12 @@ output "LOKI_READY_URL" {
 # GET PROMETHEUS URL 
 output "PROMETHEUS" {
   value = "http://${aws_instance.my-ec2.public_ip}:9090"
+}
+
+
+# GET grafana URL 
+output "grafana" {
+  value = "http://${aws_instance.my-ec2.public_ip}:3000"
 }
 
 # GET EC2 PUBLIC IP 
