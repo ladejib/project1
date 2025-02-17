@@ -9,7 +9,7 @@ if not os.path.exists('logs'):
     os.makedirs('logs')
 
 # Set up logging
-log_file = 'logs/app.log'
+log_file = '/var/log/app.log'
 
 file_handler = logging.FileHandler(log_file)
 file_handler.setLevel(logging.INFO)

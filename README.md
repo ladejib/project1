@@ -11,7 +11,12 @@ docker run -p 5000:5000 -v $(pwd)/logs:/app/logs saifb/color-app
       job: color_app_logs
       __path__: /home/ubuntu/logs/app.log
 
-# The mount point is wrong cp your own configure files
+- job_name: system
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: varlogs
+      __path__: /var/log/*log
 
-docker run --name loki -d -v $(pwd)/loki:/mnt/config -p 3100:3100 grafana/loki:3.4.1 -config.file=/mnt/config/loki-config.yaml
 
