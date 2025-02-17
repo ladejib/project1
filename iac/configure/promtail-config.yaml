@@ -16,10 +16,11 @@ scrape_configs:
     labels:
       job: varlogs
       __path__: /var/log/*log
-- job_name: color_app
+
+- job_name: colorapp
   static_configs:
   - targets:
       - localhost
     labels:
-      job: color_app_logs
+      job: colorapplogs
       __path__: /home/ubuntu/logs/app.log
