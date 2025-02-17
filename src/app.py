@@ -5,8 +5,8 @@ import sys, os
 app = Flask(__name__)
 
 # Ensure the logs directory exists
-if not os.path.exists('logs'):
-    os.makedirs('logs')
+if not os.path.exists('/var/log'):
+    os.makedirs('/var/log')
 
 # Set up logging
 log_file = '/var/log/app.log'
