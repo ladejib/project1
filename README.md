@@ -1,7 +1,3 @@
-# Build the simple app 
-docker build -t  saifb/color-app .
-docker run -p 5000:5000 -v $(pwd)/logs:/app/logs saifb/color-app
-
 # Additional mapping for app
 - job_name: applogs
   static_configs:
@@ -19,4 +15,10 @@ docker run -p 5000:5000 -v $(pwd)/logs:/app/logs saifb/color-app
       job: varlogs
       __path__: /var/log/*log
 
+# Gremlin Installation verification
+# REF: https://www.gremlin.com/docs/reliability-management-quick-start-guide
+gremlin check auth
 
+# Replace localhost with the IP address of app (Prometheus.yaml)
+
+sed -i 's/localhost/<IP_Address>/g' /tmp/prometheus/prometheus.yaml
